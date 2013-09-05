@@ -1,0 +1,17 @@
+TARGET=xgs.xpl
+SOURCES=xgs.c
+OBJECTS=xgs.o
+
+CC=mingw32-gcc
+CFLAGS=-Wall -IC:/temp/sdk/SDK/CHeaders/XPLM -DAPL=0 -DIBM=1
+LNFLAGS=-LC:/temp/sdk/SDK/Libraries/Win
+LIBS=C:/temp/sdk/SDK/Libraries/Win/xplm.lib C:/temp/sdk/SDK/Libraries/Win/xpwidgets.lib -lOpenGL32
+
+all: $(TARGET)
+
+.c.o:
+	$(CC) $(CFLAGS) -c $<
+	
+$(TARGET): $(OBJECTS)
+	dllwrap --dllname=$(TARGET) --driver-name=$(CC) $(OBJECTS) $(LIBS)
+

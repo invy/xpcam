@@ -1,0 +1,5 @@
+*.o
+lin.xpl
+win.xpl
+xgs.*
+xpcam.pro.user
