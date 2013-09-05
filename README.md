@@ -1,4 +1,3 @@
 xpcam
-=====
 
-x-plane camera movement effects
+XPlane camera movement effects plugin
