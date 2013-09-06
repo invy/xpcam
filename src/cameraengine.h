@@ -13,7 +13,7 @@
 #include "siminterface/IDataAccess.h"
 #include "siminterface/simdata.h"
 #include "effects/cameraeffect.h"
-#include "camerarolleffect.h"
+#include "effects/camerarolleffect.h"
 #include "effects/vibrationeffect.h"
 #include "effects/buffetingeffect.h"
 #include "effects/groundshakingeffect.h"
@@ -37,12 +37,12 @@ class CameraEngine
 
 private:
 
-    std::vector<boost::shared_ptr<CameraEffect> > effects;
+    std::vector<boost::shared_ptr<CameraEffect> > m_effects;
 
-    CameraPosition g_defaultCameraPosition;
-    CameraPosition g_positionDelta;
+    CameraPosition m_defaultCameraPosition;
+    CameraPosition m_positionDelta;
 
-    struct ViewDataRefs gVDataRefs;
+    struct ViewDataRefs m_VDataRefs;
 
 public:
     static float gameLoopCallback(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop, int inCounter, void *inRefcon)
@@ -59,26 +59,22 @@ public:
         auto simdata = SimData<TD>::getInstance();
         auto dataAccess = simdata.m_dataAccess;
 
-        gVDataRefs.refViewRoll      = simdata.requireDataRef(std::string("sim/graphics/view/field_of_view_roll_deg"));
-        gVDataRefs.refRelHeadPosX   = simdata.requireDataRef(std::string("sim/graphics/view/pilots_head_x"));
-        gVDataRefs.refRelHeadPosY   = simdata.requireDataRef(std::string("sim/graphics/view/pilots_head_y"));
-        gVDataRefs.refRelHeadPosZ   = simdata.requireDataRef(std::string("sim/graphics/view/pilots_head_z"));
+        m_VDataRefs.refViewRoll      = simdata.requireDataRef(std::string("sim/graphics/view/field_of_view_roll_deg"));
+        m_VDataRefs.refRelHeadPosX   = simdata.requireDataRef(std::string("sim/graphics/view/pilots_head_x"));
+        m_VDataRefs.refRelHeadPosY   = simdata.requireDataRef(std::string("sim/graphics/view/pilots_head_y"));
+        m_VDataRefs.refRelHeadPosZ   = simdata.requireDataRef(std::string("sim/graphics/view/pilots_head_z"));
 
-        dataAccess.setDataf(gVDataRefs.refViewRoll, 0);
+        dataAccess.setDataf(m_VDataRefs.refViewRoll, 0);
 
-
-
-        dataAccess.setDataf(gVDataRefs.refViewRoll, 0);
-
-        effects.push_back(boost::shared_ptr<CameraEffect>(new CameraRollEffect<TD>(0.01f)));
-        effects.push_back(boost::shared_ptr<CameraEffect>(new GroundShakingEffect<TD>(1.02f, 0.003f, 0.03f)));
-        effects.push_back(boost::shared_ptr<CameraEffect>(new GLoadEffect<TD>(1.02f, 0.008f, 0.03f)));
-        effects.push_back(boost::shared_ptr<CameraEffect>(new BuffetingEffect<TD>(1.02f, 0.01f, 0.03f)));
+        m_effects.push_back(boost::shared_ptr<CameraEffect>(new CameraRollEffect<TD>(0.01f)));
+        m_effects.push_back(boost::shared_ptr<CameraEffect>(new GroundShakingEffect<TD>(1.02f, 0.003f, 0.03f)));
+        m_effects.push_back(boost::shared_ptr<CameraEffect>(new GLoadEffect<TD>(1.02f, 0.008f, 0.03f)));
+        m_effects.push_back(boost::shared_ptr<CameraEffect>(new BuffetingEffect<TD>(1.02f, 0.01f, 0.03f)));
 
         printf("reading simulator parameters\n");
-        g_defaultCameraPosition.y = dataAccess.getDataf(gVDataRefs.refRelHeadPosY);
-        g_defaultCameraPosition.x = dataAccess.getDataf(gVDataRefs.refRelHeadPosX);
-        g_defaultCameraPosition.z = dataAccess.getDataf(gVDataRefs.refRelHeadPosZ);
+        m_defaultCameraPosition.y = dataAccess.getDataf(m_VDataRefs.refRelHeadPosY);
+        m_defaultCameraPosition.x = dataAccess.getDataf(m_VDataRefs.refRelHeadPosX);
+        m_defaultCameraPosition.z = dataAccess.getDataf(m_VDataRefs.refRelHeadPosZ);
 
         printf("registring flight loop callback\n");
     }
@@ -90,10 +86,10 @@ public:
         unregisterCallbacks();
 
         auto dataAccess = SimData<TD>::getInstance().m_dataAccess;
-        dataAccess.setDataf(gVDataRefs.refRelHeadPosX, g_defaultCameraPosition.x);
-        dataAccess.setDataf(gVDataRefs.refRelHeadPosY, g_defaultCameraPosition.y);
-        dataAccess.setDataf(gVDataRefs.refRelHeadPosZ, g_defaultCameraPosition.z);
-        dataAccess.setDataf(gVDataRefs.refViewRoll, 0);
+        dataAccess.setDataf(m_VDataRefs.refRelHeadPosX, m_defaultCameraPosition.x);
+        dataAccess.setDataf(m_VDataRefs.refRelHeadPosY, m_defaultCameraPosition.y);
+        dataAccess.setDataf(m_VDataRefs.refRelHeadPosZ, m_defaultCameraPosition.z);
+        dataAccess.setDataf(m_VDataRefs.refViewRoll, 0);
 
     }
 
@@ -101,21 +97,21 @@ public:
     {
         CameraPosition delta;
         auto dataAccess = SimData<TD>::getInstance().m_dataAccess;
-        g_defaultCameraPosition.y = dataAccess.getDataf(gVDataRefs.refRelHeadPosY) - g_positionDelta.y;
-        g_defaultCameraPosition.x = dataAccess.getDataf(gVDataRefs.refRelHeadPosX) - g_positionDelta.x;
-        g_defaultCameraPosition.z = dataAccess.getDataf(gVDataRefs.refRelHeadPosZ) - g_positionDelta.z;
+        m_defaultCameraPosition.y = dataAccess.getDataf(m_VDataRefs.refRelHeadPosY) - m_positionDelta.y;
+        m_defaultCameraPosition.x = dataAccess.getDataf(m_VDataRefs.refRelHeadPosX) - m_positionDelta.x;
+        m_defaultCameraPosition.z = dataAccess.getDataf(m_VDataRefs.refRelHeadPosZ) - m_positionDelta.z;
 
-        for(auto it = effects.begin(); it != effects.end(); it++) {
-            (*it)->apply(g_defaultCameraPosition, delta, dataAccess);
+        for(auto it = m_effects.begin(); it != m_effects.end(); it++) {
+            (*it)->apply(m_defaultCameraPosition, delta, dataAccess);
         }
 
-        dataAccess.setDataf(gVDataRefs.refRelHeadPosX, g_defaultCameraPosition.x + delta.x);
-        dataAccess.setDataf(gVDataRefs.refRelHeadPosY, g_defaultCameraPosition.y + delta.y);
-        dataAccess.setDataf(gVDataRefs.refRelHeadPosZ, g_defaultCameraPosition.z + delta.z);
+        dataAccess.setDataf(m_VDataRefs.refRelHeadPosX, m_defaultCameraPosition.x + delta.x);
+        dataAccess.setDataf(m_VDataRefs.refRelHeadPosY, m_defaultCameraPosition.y + delta.y);
+        dataAccess.setDataf(m_VDataRefs.refRelHeadPosZ, m_defaultCameraPosition.z + delta.z);
 
-        g_positionDelta = delta;
+        m_positionDelta = delta;
 
-        dataAccess.setDataf(gVDataRefs.refViewRoll, delta.roll);
+        dataAccess.setDataf(m_VDataRefs.refViewRoll, delta.roll);
         return 0.03f;
 
     }
@@ -123,7 +119,7 @@ public:
     void onHotKey();
 
     void removeEffects() {
-        effects.clear();
+        m_effects.clear();
     }
 
     void unregisterCallbacks() {
@@ -148,7 +144,7 @@ private:
         ar.register_type(static_cast<GLoadEffect<TD> *>(NULL));
 
         std::cout << "serialize effects parameters" << std::endl;
-        ar & BOOST_SERIALIZATION_NVP(effects);
+        ar & BOOST_SERIALIZATION_NVP(m_effects);
     }
 };
 

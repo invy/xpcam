@@ -85,7 +85,8 @@ HEADERS += \
     test/functional/camerarolleffectfunctionaltests.h \
     test/base/testdataaccess.h \
     test/serialization/serializationtest.h \
-    src/Singleton.h
+    src/Singleton.h \
+    src/effects/camerarolleffect.h
 
 SOURCES += \
     src/xpcam.cpp \

@@ -67,14 +67,14 @@ class PluginInstance :
     };
 
 public:
-    struct PersistentData gPD;
+    struct PersistentData m_PD;
 public:
-    bool registred;
+    bool m_registred;
 
-    std::shared_ptr<IProcessing> g_processing;
-    std::shared_ptr<IDataAccess> g_dataAccess;
-    std::shared_ptr<IDisplay> g_display;
-    std::shared_ptr<IPlanes> g_planes;
+    std::shared_ptr<IProcessing> m_processing;
+    std::shared_ptr<IDataAccess> m_dataAccess;
+    std::shared_ptr<IDisplay> m_display;
+    std::shared_ptr<IPlanes> m_planes;
 
     CameraEngine<TDataAccess, TProcessing> *m_pCamEngine;
     SimData<TDataAccess> m_simData;
@@ -116,7 +116,7 @@ public:
     {
         std::cout << __func__ << "\n";
         try {
-            gPD.hotKey = g_display->registerHotKey(XPLM_VK_F8, xplm_DownFlag,
+            m_PD.hotKey = m_display->registerHotKey(XPLM_VK_F8, xplm_DownFlag,
                                             "Circling External View",
                                             EnableEffectsHotKeyCallback,
                                             this);
@@ -145,14 +145,14 @@ public:
 
         PluginInstance<TDataAccess, TProcessing, TDisplay, TPlanes>& inst = PluginInstance<TDataAccess, TProcessing, TDisplay, TPlanes>::getInstance();
         /* Now we control the camera until the view changes. */
-        if(!inst.registred)
+        if(!inst.m_registred)
         {
             m_pCamEngine = new CameraEngine<TDataAccess, TProcessing>();
             try {
                 {
                     std::string path;
                     std::string fname;
-                    g_planes->getNthAircraftModel(0, fname, path);
+                    m_planes->getNthAircraftModel(0, fname, path);
                     std::ifstream ifs(path + "xpcam_config.xml");
                     std::cout << "loading configuration: " << path << "xpcam_config.xml"  << std::endl;
                     if(ifs.good()) {
@@ -169,7 +169,7 @@ public:
             }
             std::cout << __func__ << "!! we are about to register flightloop callback" << std::endl;
             m_pCamEngine->registerCallbacks();
-            inst.registred = true;
+            inst.m_registred = true;
         }
         else
         {
@@ -178,7 +178,7 @@ public:
             {
                 std::string path;
                 std::string fname;
-                g_planes->getNthAircraftModel(0, fname, path);
+                m_planes->getNthAircraftModel(0, fname, path);
                 std::ofstream ofs(path + "xpcam_config.xml");
                 std::cout << "saving configuration: " << path << "xpcam_config.xml" << std::endl;
                 if(ofs.good()) {
@@ -193,7 +193,7 @@ public:
                 std::cerr << e.what() << std::endl;
             }
             delete m_pCamEngine;
-            inst.registred = false;
+            inst.m_registred = false;
         }
 
     }
@@ -201,10 +201,10 @@ public:
 public:
 
     PluginInstance(void) :
-        g_processing(new TProcessing()),
-        g_dataAccess(new TDataAccess()),
-        g_display(new TDisplay()),
-        g_planes(new TPlanes()),
+        m_processing(new TProcessing()),
+        m_dataAccess(new TDataAccess()),
+        m_display(new TDisplay()),
+        m_planes(new TPlanes()),
         m_pCamEngine(NULL)
     {
         std::cout << __func__ << "\n";

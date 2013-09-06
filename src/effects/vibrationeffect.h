@@ -12,13 +12,13 @@
 
 class VibrationEffect : public CameraEffect {
 protected:
-    float tolerance;
-    float k;
-    float dmax;
+    float m_tolerance;
+    float m_k;
+    float m_dmax;
 public:
     VibrationEffect() {}
     VibrationEffect(float tolerance, float k, float dmax)
-        : tolerance(tolerance), k(k), dmax(dmax), distribution(0.0,1.0)
+        : m_tolerance(tolerance), m_k(k), m_dmax(dmax), distribution(0.0,1.0)
     {
         std::cout << __func__ << "\n";
     }
@@ -32,7 +32,7 @@ public:
 
     float randomVibratoin() {
         float rnd = distribution(generator);
-        return (k * rnd - k/2.0f);
+        return (m_k * rnd - m_k/2.0f);
     }
     float fvib(float speed) {
         // kSpeed defines the speed influence
@@ -41,10 +41,10 @@ public:
             kSpeed = 1;
         float ret = kSpeed * randomVibratoin();
 
-        if(ret > dmax)
-            return dmax;
-        else if(ret < -dmax)
-            return -dmax;
+        if(ret > m_dmax)
+            return m_dmax;
+        else if(ret < -m_dmax)
+            return -m_dmax;
         return ret;
     }
     /*
@@ -65,9 +65,9 @@ private:
     void serialize(Archive & ar, const unsigned int /* version */)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(CameraEffect);
-        ar & BOOST_SERIALIZATION_NVP(tolerance);
-        ar & BOOST_SERIALIZATION_NVP(k);
-        ar & BOOST_SERIALIZATION_NVP(dmax);
+        ar & BOOST_SERIALIZATION_NVP(m_tolerance);
+        ar & BOOST_SERIALIZATION_NVP(m_k);
+        ar & BOOST_SERIALIZATION_NVP(m_dmax);
     }
 
 };
